@@ -1,3 +1,10 @@
+//*************************************************** Line tracking ***********************************************//
+/* This sketch uses an ESP-EYE to detect a line within an image. Three methods can be used: RANSAC, Sobel and Hough
+Transform. The RANSAC method is a random method that finds two edge points and measures the number of inlier,
+the Sobel method find the magnitude and direction of each edge point to give a resulting vector, and the Hough 
+Transform converts the image into the parameter space to find the polar coordiantes of the line. The results of
+the algorithm is sent over the WiFi to an ESP32 chip. */
+
 #include "WiFi.h"
 #include "ESPAsyncWebServer.h"
 #include "esp_camera.h"
@@ -48,6 +55,7 @@
 uint8_t image[ROWS][COLS] = {0};
 char line_result[20];
 
+// initalise classes
 histogram_eq Histogram_eq = histogram_eq();
 ransac Ransac = ransac();
 sobel_vector Sobel_vector = sobel_vector();
@@ -60,11 +68,12 @@ const char* password = "123456789";
 // Create AsyncWebServer object on port 80
 AsyncWebServer server(80);
 
+// function that is called through the web server request, takes an image then performs the line tracking algorithm 
+// and sends the results back
 String result()
 {
 
-  Serial.println("start loop");
-
+  // capture image
   camera_fb_t * fb = NULL;
   uint8_t *ptr = NULL;
 
@@ -73,7 +82,7 @@ String result()
     Serial.println("Camera capture failed");
   }
 
-  // fill image[][] from buffer
+  // fill image from buffer
   ptr = fb->buf;
   for (uint8_t x = 0; x < ROWS; x++)
   {
@@ -81,24 +90,25 @@ String result()
     {
       image[x][y] = *ptr;
       ptr++;
-      //Serial.print(image[x][y]);
-      //Serial.print(", ");
     }
-    //Serial.println();
   }
-
-  Serial.println("equilise");
 
   esp_camera_fb_return(fb);
 
+
+  // perform histogram equilsation
   Histogram_eq.equilise(image);
 
+  // start timer to measure the length of computation
   unsigned long start_millis = millis();
+
+  // line dectection using sobel filter to find angle of line and offset from the centre
   Serial.print("sobel ");
   Sobel_vector.sobel_threshold = SOBEL_THRESHOLD;
   Sobel_vector.sobel_algorithm(image);
   sprintf(line_result, "%f, %d", Sobel_vector.results.angle, Sobel_vector.results.offset);
 
+  // line detection using ransac method to return m and c values of line
 //  Serial.print("ransac ");
 //  Ransac.sobel_threshold = SOBEL_THRESHOLD;
 //  Ransac.ransac_threshold = RANSAC_THRESHOLD;
@@ -106,17 +116,19 @@ String result()
 //  Ransac.ransac_algorithm(image);
 //  sprintf(line_result, "%d, %d", Ransac.results.m, Ransac.results.c);
 
+  // line detection using hough transform to find polar coordinate of line, rho and theta values
 //  Serial.print("hough ");
 //  Hough_transform.sobel_threshold = SOBEL_THRESHOLD;
 //  uint8_t** a = Hough_transform.sobel(image);
 //  Hough_transform.hough_algorithm(a);
 //  sprintf(line_result, "%d, %d", Hough_transform.results.rho, Hough_transform.results.theta);
 
+  // stop timer
   unsigned long stop_millis = millis();
   unsigned long time_millis = stop_millis - start_millis;
   Serial.println(time_millis);
-  
-  
+
+  // return string of result to ESP32
   return line_result;
 }
 
@@ -183,7 +195,6 @@ void setup() {
   // Start server
   server.begin();
   
-  Serial.println("end setup");
 }
 
 void loop()

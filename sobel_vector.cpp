@@ -1,12 +1,8 @@
 #include "Arduino.h"
 #include "sobel_vector.h"
 
-#define ROWS 120
-#define COLS 160
-#define ROW2 118
-#define COL2 158
-#define WINDOW_SIZE 3
-
+// function to detect the line within an image using the Sobel filter to find the direction of the
+// line from the resulting vector
 void sobel_vector::sobel_algorithm(uint8_t (*im)[COLS])
 {
   int** arr = new int * [ROW2];
@@ -65,19 +61,7 @@ void sobel_vector::sobel_algorithm(uint8_t (*im)[COLS])
 
             // calculate vector of point
             vec_x = vec_x + mag * cos(dir);
-            //printf("vec_x = %f", vec_x);
-                //Serial.print("row = ");
-                //Serial.print(x);
-                //Serial.print(" col = ");
-                //Serial.println(y);
-                //Serial.print("vector x = ");
-                //Serial.println(vec_x);
             vec_y = vec_y + mag * sin(dir);
-            //printf(" vec_y = %f\n", vec_y);
-            //      Serial.print("vector y = ");
-            //      Serial.println(vec_y);
-            //      Serial.print(mag);
-            //      Serial.print(", ");
           }
             
           else
@@ -87,20 +71,12 @@ void sobel_vector::sobel_algorithm(uint8_t (*im)[COLS])
 
       
     }
-    //    Serial.print("row = ");
-    //    Serial.println(x);
-    //    Serial.print("vector x = ");
-    //    Serial.println(vec_x);
-    //    Serial.print("vector y = ");
-    //    Serial.println(vec_y);
-    //    Serial.print("\n");
-    //printf("\n");
   }
 
+  // find angle of the line
+  vector = atan(vec_y / vec_x) * (180 / PI);
 
-
-  vector = atan(vec_y / vec_x) * (180 / PI); // add vectors
-
+  // find the offset of the line from the centre of the image
   int offset = 0;
   int x = 0;
   while ((offset == 0) && x < (COL2 / 2))
@@ -118,7 +94,5 @@ void sobel_vector::sobel_algorithm(uint8_t (*im)[COLS])
 
   results.angle = vector;
   results.offset = offset;
-  //Serial.print("angle = ");
-  //Serial.print(vector);
 
 }

@@ -7,6 +7,7 @@
 #define COL2 158
 #define WINDOW_SIZE 3
 
+// function to measure the m and c values of a line using the RANSAC method
 void ransac::ransac_algorithm(uint8_t (*im)[COLS])
 {
   //Serial.begin(115200);
@@ -89,16 +90,13 @@ void ransac::ransac_algorithm(uint8_t (*im)[COLS])
   float m = 0;
   float c = 0;
 
+  // repeat 
   for (int r = 0; r < iterations; r++)
   {
     int inliers = 0;
     // pick two random edge points and make line between two
     int num1 = (int)random(0, count);
-    int num2 = random(0 ,count);
-//    if (num1 == num2) // to make sure 2 different points are chosen
-//      num2 = random(0, count + 1);
-    //printf("x1 = %d, y1 = %d\n", coord[num1][0], coord[num1][1]);
-    //printf("x2 = %d, y2 = %d\n", coord[num2][0], coord[num2][1]);
+    int num2 = (int)random(0, count);
     float x1 = (float)coord[num1][0];
     float y1 = (float)coord[num1][1];
     float x2 = (float)coord[num2][0];
@@ -109,19 +107,9 @@ void ransac::ransac_algorithm(uint8_t (*im)[COLS])
       num2 = random(0, count);
       x2 = (float)coord[num2][0];
       y2 = (float)coord[num2][1];
-//      Serial.print("x2 = ");
-//      Serial.print(x2);
-//      Serial.print(" , y2 = ");
-//      Serial.println(y2);
     }
     m = (x2 - x1) / (y2 - y1);
     c = x1 - (m * y1);
-
-    //printf("x = %f y + %f\n", m, c);
-//    Serial.print("x = ");
-//    Serial.print(m);
-//    Serial.print(", y = ");
-//    Serial.println(c);
 
     for (int x = 0; x < count; x++)
     {
@@ -139,7 +127,6 @@ void ransac::ransac_algorithm(uint8_t (*im)[COLS])
         inliers++;
       }
     }
-    //printf("m = %f, c = %f, inliers = %d\n", m, c, inliers);
 
     // save the m and c values with the highest number of inliers
     if (inliers > maxInliers)

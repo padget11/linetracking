@@ -3,6 +3,8 @@
 
 #define ROWS 120
 #define COLS 160
+#define ROW2 118
+#define COL2 158
 #define WINDOW_SIZE 3
 
 struct sobel_line

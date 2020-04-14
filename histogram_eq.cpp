@@ -1,9 +1,7 @@
 #include "Arduino.h"
 #include "histogram_eq.h"
 
-#define ROWS 120
-#define COLS 160
-
+// function to histogram equilise an image to increase the contrast of the image
 void histogram_eq::equilise(uint8_t (*im)[COLS])
 {
   // count the number that each pixel value occurs
